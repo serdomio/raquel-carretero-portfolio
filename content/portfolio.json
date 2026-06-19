@@ -1,6 +1,6 @@
 {
   "site": {
-    "name": "Raquel Carretero",
+    "name": "Raquel Carretero La mejor",
     "cover": "img-6046.jpg",
     "role": "",
     "locations": [],
@@ -16,18 +16,6 @@
       "id": "producto-editorial",
       "title": "Producto Editorial",
       "description": "Bodegón y producto con mirada editorial: luz, textura y composición al servicio del objeto.",
-      "blocks": [
-        {
-          "_template": "statement",
-          "text": "La luz como materia: cada objeto pide su propia sombra."
-        },
-        {
-          "_template": "split",
-          "image": "la-guinda2-2.jpg",
-          "layout": "image-left",
-          "body": "Serie **La Guinda** — cerámica fotografiada entre el estudio y la luz natural, buscando textura y volumen sobre fondos neutros."
-        }
-      ],
       "works": [
         {
           "image": "la-guinda2-2.jpg",
@@ -52,6 +40,18 @@
           "model": "",
           "concept": "Bodegón de producto",
           "year": "2024"
+        }
+      ],
+      "blocks": [
+        {
+          "text": "La luz como materia: cada objeto pide su propia sombra.",
+          "_template": "statement"
+        },
+        {
+          "image": "la-guinda2-2.jpg",
+          "body": "Serie **La Guinda** — cerámica fotografiada entre el estudio y la luz natural, buscando textura y volumen sobre fondos neutros.\n",
+          "layout": "image-left",
+          "_template": "split"
         }
       ]
     },
@@ -90,20 +90,6 @@
       "id": "moda",
       "title": "Moda",
       "description": "Editorial y campaña de moda: dirección de imagen, cuerpo y prenda en diálogo con el espacio.",
-      "blocks": [
-        {
-          "_template": "fullbleed",
-          "image": "img-5534-4.jpg",
-          "height": "tall",
-          "caption": "Editorial — campaña ejemplo"
-        },
-        {
-          "_template": "diptych",
-          "imageA": "img-5875-2.jpg",
-          "imageB": "img-5894-4.jpg",
-          "caption": "Díptico — serie ejemplo"
-        }
-      ],
       "works": [
         {
           "image": "alba1414.jpg",
@@ -128,6 +114,20 @@
           "model": "Modelo ejemplo",
           "concept": "Campaña ejemplo",
           "year": "2024"
+        }
+      ],
+      "blocks": [
+        {
+          "image": "img-5534-4.jpg",
+          "caption": "Editorial — campaña ejemplo",
+          "height": "tall",
+          "_template": "fullbleed"
+        },
+        {
+          "imageA": "img-5875-2.jpg",
+          "imageB": "img-5894-4.jpg",
+          "caption": "Díptico — serie ejemplo",
+          "_template": "diptych"
         }
       ]
     },
