@@ -1,0 +1,259 @@
+@import "tailwindcss";
+
+/* Warm / textural editorial theme. Tweak tokens here, not in components. */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Newsreader", Georgia, "Times New Roman", serif;
+
+  /* warm paper + ink palette */
+  --color-paper: #f3eee6;
+  --color-ink: #221d1a;
+  --color-muted: #9a8d7d;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+}
+
+/* ── Intro splash: full-screen name over a floating cover photo ──── */
+/* Fixed overlay so that, when it fades, the first section is already
+   underneath it — no scroll needed to "give way" to the content. */
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  background: var(--color-paper);
+  overflow: hidden;
+  transition: opacity 1s ease;
+}
+.intro.hide {
+  opacity: 0;
+  pointer-events: none;
+}
+/* The significant photo fills the screen and drifts slowly under the name. */
+.intro-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: cover-float 12s ease-in-out infinite alternate;
+  will-change: transform;
+}
+.intro-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Soft paper glow centred behind the name so it stays legible on any photo. */
+.intro-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 45% at 50% 50%,
+    rgba(243, 238, 230, 0.6) 0%,
+    rgba(243, 238, 230, 0) 70%
+  );
+}
+@keyframes cover-float {
+  from { transform: scale(1.06) translate3d(0, 0, 0); }
+  to   { transform: scale(1.13) translate3d(0, -2%, 0); }
+}
+.intro h1,
+.intro-title {
+  position: relative;
+  z-index: 2;
+  font-family: var(--font-serif), serif;
+  font-weight: 300;
+  font-size: clamp(2.75rem, 11vw, 9rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+  text-shadow: 0 2px 40px rgba(243, 238, 230, 0.9), 0 0 14px rgba(243, 238, 230, 0.95);
+}
+
+/* ── Sections + work rows ───────────────────────────────────────── */
+.section {
+  padding: 9vh 4vw;
+}
+.section-works {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 2vw;
+}
+
+/* ── Flip work card (click flips, hover expands) ────────────────── */
+.work {
+  position: relative;
+  height: 62vh;
+  aspect-ratio: var(--ar, 1);
+  max-width: 92vw;
+  perspective: 1800px;
+  cursor: pointer;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.work:hover {
+  transform: scale(1.18);
+  z-index: 40;
+}
+.work .flip {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0.05, 0.2, 1);
+}
+.work.flipped .flip {
+  transform: rotateY(180deg);
+}
+.work .face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.work .front img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.work .back {
+  transform: rotateY(180deg);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 2rem;
+  text-align: center;
+}
+.work .back p {
+  font-size: clamp(0.78rem, 1.05vw, 0.95rem);
+  letter-spacing: 0.05em;
+  color: color-mix(in srgb, var(--color-paper) 78%, transparent);
+}
+.work .back p.lead {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 1.6vw, 1.5rem);
+  letter-spacing: 0;
+  color: var(--color-paper);
+}
+
+@media (max-width: 768px) {
+  .work {
+    height: auto;
+    width: 100%;
+    max-width: 100%;
+  }
+  .work:hover {
+    transform: none;
+    z-index: auto;
+  }
+  .section-works {
+    gap: 4vw;
+  }
+}
+
+/* ── Section label: flashes over the images ~3s on scroll-in ────── */
+#section-label {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+#section-label.show {
+  opacity: 1;
+}
+#section-label span {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(2rem, 7vw, 5rem);
+  color: var(--color-ink);
+  text-shadow: 0 2px 36px rgba(243, 238, 230, 0.85), 0 0 10px rgba(243, 238, 230, 0.95);
+  transform: translateY(14px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+#section-label.show span {
+  transform: translateY(0);
+}
+
+/* ── Footnote → Universo map ────────────────────────────────────── */
+.footnote {
+  text-align: center;
+  padding: 12vh 4vw 2vh;
+}
+.footnote a {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(1.5rem, 4vw, 2.6rem);
+  color: var(--color-ink);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+.footnote a:hover {
+  border-color: var(--color-ink);
+}
+.footnote small {
+  display: block;
+  margin-top: 0.7rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* ── Footer ─────────────────────────────────────────────────────── */
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  justify-content: center;
+  padding: 14vh 4vw 9vh;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.site-footer a {
+  transition: color 0.3s ease;
+}
+.site-footer a:hover {
+  color: var(--color-ink);
+}
+
+/* ── Gentle scroll-in reveal (progressive enhancement) ──────────── */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+html.js .reveal.in {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  html.js .reveal { opacity: 1; transform: none; transition: none; }
+  .intro-cover { animation: none; }
+}

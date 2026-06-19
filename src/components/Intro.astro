@@ -1,0 +1,27 @@
+---
+import { Image } from 'astro:assets';
+import { site } from '../data/content';
+import type { ImageMetadata } from 'astro';
+import type { Work } from '../data/content';
+
+type RenderWork = Work & { slug: string; img: ImageMetadata };
+interface Props {
+  cover?: RenderWork;
+}
+const { cover } = Astro.props;
+---
+
+<section class="intro" id="intro">
+  {cover && (
+    <div class="intro-cover">
+      <Image
+        src={cover.img}
+        alt={cover.type ?? site.name}
+        widths={[768, 1280, 1920]}
+        sizes="100vw"
+        loading="eager"
+      />
+    </div>
+  )}
+  <h1 class="intro-title">{site.name}</h1>
+</section>

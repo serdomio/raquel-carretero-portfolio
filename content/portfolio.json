@@ -1,0 +1,166 @@
+{
+  "site": {
+    "name": "Raquel Carretero",
+    "cover": "img-6046.jpg",
+    "role": "",
+    "locations": [],
+    "email": "raquelcarreteroluis@gmail.com",
+    "instagram": {
+      "handle": "@raquel__carretero",
+      "url": "https://www.instagram.com/raquel__carretero/"
+    },
+    "about": "Raquel Carretero es fotógrafa de **producto, moda y proyectos de autor**. Trabaja entre el estudio y la luz natural, buscando textura y composición al servicio del objeto.\n\nPara encargos y colaboraciones, escribe a [raquelcarreteroluis@gmail.com](mailto:hello@example.com).\n"
+  },
+  "sections": [
+    {
+      "id": "producto-editorial",
+      "title": "Producto Editorial",
+      "description": "Bodegón y producto con mirada editorial: luz, textura y composición al servicio del objeto.",
+      "blocks": [
+        {
+          "_template": "statement",
+          "text": "La luz como materia: cada objeto pide su propia sombra."
+        },
+        {
+          "_template": "split",
+          "image": "la-guinda2-2.jpg",
+          "layout": "image-left",
+          "body": "Serie **La Guinda** — cerámica fotografiada entre el estudio y la luz natural, buscando textura y volumen sobre fondos neutros."
+        }
+      ],
+      "works": [
+        {
+          "image": "la-guinda2-2.jpg",
+          "type": "Producto Editorial",
+          "collection": "La Guinda",
+          "model": "",
+          "concept": "Editorial de cerámica",
+          "year": "2025"
+        },
+        {
+          "image": "la-guinda4-1.jpg",
+          "type": "Producto Editorial",
+          "collection": "La Guinda",
+          "model": "",
+          "concept": "Editorial de cerámica",
+          "year": "2025"
+        },
+        {
+          "image": "img-6046.jpg",
+          "type": "Producto Editorial",
+          "collection": "Colección ejemplo",
+          "model": "",
+          "concept": "Bodegón de producto",
+          "year": "2024"
+        }
+      ]
+    },
+    {
+      "id": "e-commerce",
+      "title": "E-commerce",
+      "description": "Fotografía de catálogo limpia y consistente, pensada para vender: fondo neutro, color fiel y detalle.",
+      "works": [
+        {
+          "image": "img-2327-blanco.jpg",
+          "type": "E-commerce",
+          "collection": "Sofás de empresa_ejemplo",
+          "model": "",
+          "concept": "Fotos para empresa_ejemplo",
+          "year": "2025"
+        },
+        {
+          "image": "img-2329-blanco.jpg",
+          "type": "E-commerce",
+          "collection": "Sofás de empresa_ejemplo",
+          "model": "",
+          "concept": "Fotos para empresa_ejemplo",
+          "year": "2025"
+        },
+        {
+          "image": "img-2354-blanco.jpg",
+          "type": "E-commerce",
+          "collection": "Sofás de empresa_ejemplo",
+          "model": "",
+          "concept": "Fotos para empresa_ejemplo",
+          "year": "2025"
+        }
+      ]
+    },
+    {
+      "id": "moda",
+      "title": "Moda",
+      "description": "Editorial y campaña de moda: dirección de imagen, cuerpo y prenda en diálogo con el espacio.",
+      "blocks": [
+        {
+          "_template": "fullbleed",
+          "image": "img-5534-4.jpg",
+          "height": "tall",
+          "caption": "Editorial — campaña ejemplo"
+        },
+        {
+          "_template": "diptych",
+          "imageA": "img-5875-2.jpg",
+          "imageB": "img-5894-4.jpg",
+          "caption": "Díptico — serie ejemplo"
+        }
+      ],
+      "works": [
+        {
+          "image": "alba1414.jpg",
+          "type": "Moda",
+          "collection": "Editorial de moda",
+          "model": "Modelo ejemplo",
+          "concept": "Campaña ejemplo",
+          "year": "2025"
+        },
+        {
+          "image": "img-5557-4.jpg",
+          "type": "Moda",
+          "collection": "Editorial de moda",
+          "model": "Modelo ejemplo",
+          "concept": "Campaña ejemplo",
+          "year": "2024"
+        },
+        {
+          "image": "untitled-5.png",
+          "type": "Moda",
+          "collection": "Editorial de moda",
+          "model": "Modelo ejemplo",
+          "concept": "Campaña ejemplo",
+          "year": "2024"
+        }
+      ]
+    },
+    {
+      "id": "proyectos",
+      "title": "Proyectos",
+      "description": "Trabajo personal y de autor: series donde la fotografía se vuelve investigación y experimento.",
+      "works": [
+        {
+          "image": "daisy.jpg",
+          "type": "Proyectos",
+          "collection": "Proyecto personal",
+          "model": "",
+          "concept": "Serie ejemplo",
+          "year": "2024"
+        },
+        {
+          "image": "joyas7.jpg",
+          "type": "Proyectos",
+          "collection": "Joyería ejemplo",
+          "model": "",
+          "concept": "Editorial de joyería",
+          "year": "2025"
+        },
+        {
+          "image": "joyas10.jpg",
+          "type": "Proyectos",
+          "collection": "Joyería ejemplo",
+          "model": "",
+          "concept": "Editorial de joyería",
+          "year": "2025"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+---
+import WorkCard from './WorkCard.astro';
+import Blocks from './Blocks.astro';
+import type { ImageMetadata } from 'astro';
+import type { Work } from '../data/content';
+
+type RenderWork = Work & { slug: string; img: ImageMetadata };
+interface Props {
+  id: string;
+  title: string;
+  works: RenderWork[];
+  blocks?: any[];
+}
+const { id, title, works, blocks } = Astro.props;
+---
+
+<section class="section reveal" id={id} data-title={title}>
+  <Blocks blocks={blocks} />
+  <div class="section-works">
+    {works.map((w) => <WorkCard {...w} />)}
+  </div>
+</section>

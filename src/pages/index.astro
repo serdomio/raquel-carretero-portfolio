@@ -1,0 +1,104 @@
+---
+import Base from '../layouts/Base.astro';
+import Intro from '../components/Intro.astro';
+import Section from '../components/Section.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { site, sections as sectionsData } from '../data/content';
+import { byFilename } from '../lib/images';
+import type { ImageMetadata } from 'astro';
+
+// Images are optimized at build time from src/assets/images (see lib/images.ts).
+// The CMS (sections, order, per-image metadata) lives in content/portfolio.json;
+// we match each entry to its optimized image by filename. Missing files are skipped.
+
+const sections = sectionsData
+  .map((s) => ({
+    ...s,
+    works: s.works
+      .map((w) => ({ ...w, slug: w.image.replace(/\.[^.]+$/, ''), img: byFilename[w.image] }))
+      .filter((w): w is typeof w & { img: ImageMetadata } => Boolean(w.img)),
+  }))
+  .filter((s) => s.works.length > 0);
+
+// The splash photo: the editable `site.cover` filename, else the first image.
+const allWorks = sections.flatMap((s) => s.works);
+const coverName = (site as { cover?: string }).cover;
+const cover = (coverName && allWorks.find((w) => w.image === coverName)) || allWorks[0];
+---
+
+<Base>
+  <Intro cover={cover} />
+  {sections.map((s) => <Section {...s} />)}
+  <nav class="footnote">
+    <a href="/universo">Universo</a>
+    <small>El ecosistema de proyectos</small>
+  </nav>
+  <SiteFooter />
+  <div id="section-label" aria-hidden="true"><span></span></div>
+</Base>
+
+<script>
+  // Click an image to flip it; click again to flip back.
+  document.querySelectorAll<HTMLElement>('.work').forEach((work) => {
+    work.addEventListener('click', () => work.classList.toggle('flipped'));
+  });
+
+  // Section label: flash the title over the images for ~1.5s when a section
+  // scrolls into the centre of the viewport, then fade it out.
+  const label = document.getElementById('section-label');
+  const labelText = label?.querySelector('span');
+  let hideTimer: ReturnType<typeof setTimeout>;
+  let current = '';
+
+  const showLabel = (title: string) => {
+    if (!label || !labelText) return;
+    if (title !== current) {
+      labelText.textContent = title;
+      current = title;
+    }
+    label.classList.add('show');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => label.classList.remove('show'), 1500);
+  };
+
+  // Start observing the sections only once the splash has cleared, so the very
+  // first section's title flashes as it is revealed (not hidden behind the splash).
+  const startSections = () => {
+    const sections = document.querySelectorAll<HTMLElement>('.section');
+    if ('IntersectionObserver' in window && sections.length) {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in'); // reveal the section
+              showLabel((e.target as HTMLElement).dataset.title || '');
+            }
+          }
+        },
+        { rootMargin: '-30% 0px -45% 0px', threshold: 0 },
+      );
+      sections.forEach((s) => io.observe(s));
+    } else {
+      sections.forEach((s) => s.classList.add('in'));
+    }
+  };
+
+  // The splash (name + floating photo) fades after 2s — or on click to skip —
+  // then gives way to the first section.
+  const intro = document.getElementById('intro');
+  const hideIntro = () => {
+    if (!intro || intro.classList.contains('hide')) return;
+    intro.classList.add('hide');
+    startSections();
+  };
+
+  if (intro) {
+    const timer = setTimeout(hideIntro, 2000);
+    intro.addEventListener('click', () => {
+      clearTimeout(timer);
+      hideIntro();
+    });
+  } else {
+    startSections();
+  }
+</script>

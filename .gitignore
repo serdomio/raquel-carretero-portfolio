@@ -1,0 +1,23 @@
+# build output
+dist/
+# generated types
+.astro/
+# deps
+node_modules/
+# visual-loop screenshots
+scripts/_*.png
+# tina generated + built admin
+tina/__generated__/
+public/admin/
+# generated editor thumbnails (rebuilt by scripts/sync-thumbs.mjs)
+public/gallery-thumbs/
+# env
+.env
+.env.production
+# netlify local link state (not source)
+.netlify/
+# raw original photos (61MB duplicate of src/assets/images, not used by the
+# build) — kept in the personal monorepo, excluded from the deploy repo
+Pics/
+# os
+.DS_Store

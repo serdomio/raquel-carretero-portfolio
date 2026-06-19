@@ -1,0 +1,309 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import { site, sections as sectionsData } from '../data/content';
+import type { ImageMetadata } from 'astro';
+
+// Same build-time image matching as the homepage.
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/images/*.{jpg,jpeg,png,webp,avif}',
+  { eager: true },
+);
+const byFilename = Object.fromEntries(
+  Object.entries(modules).map(([path, mod]) => [path.split('/').pop()!, mod.default]),
+);
+
+// Each section becomes a cluster (a "project") in the galaxy.
+const projects = sectionsData
+  .map((s) => ({
+    ...s,
+    works: s.works
+      .map((w) => ({ ...w, slug: w.image.replace(/\.[^.]+$/, ''), img: byFilename[w.image] }))
+      .filter((w): w is typeof w & { img: ImageMetadata } => Boolean(w.img)),
+  }))
+  .filter((s) => s.works.length > 0);
+
+// Scattered anchor points across the galaxy (percent of the field).
+const anchors = [
+  { x: 25, y: 32 },
+  { x: 75, y: 28 },
+  { x: 32, y: 72 },
+  { x: 70, y: 70 },
+];
+
+// Deterministic pseudo-random so the layout is stable between builds.
+const rand = (seed: number) => {
+  const v = Math.sin(seed * 12.9898) * 43758.5453;
+  return v - Math.floor(v);
+};
+
+// Pre-compute each floating image's orbit (angle, radius, size, drift timing).
+const clusters = projects.map((p, ci) => {
+  const anchor = anchors[ci % anchors.length];
+  const n = p.works.length;
+  const moons = p.works.map((w, j) => {
+    const angle = (360 / n) * j + ci * 24 + rand(ci * 7 + j) * 22;
+    const radius = 12 + rand(ci * 13 + j * 3) * 5; // vmin
+    const size = 9 + rand(ci * 5 + j * 2) * 5; // vmin
+    const dur = 5 + rand(ci * 3 + j) * 4; // s
+    const delay = rand(ci * 9 + j) * -6; // s (negative = desync phases)
+    const shift = (rand(ci + j * 4) - 0.5) * 18; // px drift amplitude
+    return { ...w, angle, radius, size, dur, delay, shift };
+  });
+  return { ...p, anchor, moons };
+});
+---
+
+<Base title={`Universo — ${site.name}`}>
+  <main class="universo">
+    <header class="universo-head">
+      <a class="back" href="/">← {site.name}</a>
+      <h1>Universo</h1>
+      <p>El ecosistema de proyectos. Pasa el cursor sobre un proyecto para verlo respirar; haz clic para abrirlo.</p>
+    </header>
+
+    <div class="galaxy">
+      {clusters.map((c) => (
+        <div class="cluster" style={`--x:${c.anchor.x}%; --y:${c.anchor.y}%`}>
+          <div class="orbit">
+            {c.moons.map((m) => (
+              <figure
+                class="moon"
+                style={`--a:${m.angle.toFixed(2)}deg; --r:${m.radius.toFixed(2)}vmin; --sz:${m.size.toFixed(2)}vmin`}
+              >
+                <span class="float" style={`--d:${m.dur.toFixed(2)}s; --delay:${m.delay.toFixed(2)}s; --shift:${m.shift.toFixed(1)}px`}>
+                  <Image src={m.img} alt={m.type ?? m.slug} widths={[240, 480]} sizes="20vmin" loading="lazy" />
+                </span>
+              </figure>
+            ))}
+          </div>
+          <a class="cluster-name" href={`#${c.id}`}>{c.title}</a>
+        </div>
+      ))}
+    </div>
+
+    {clusters.map((c) => (
+      <div class="panel" id={c.id}>
+        <a class="panel-scrim" href="#close" aria-label="Cerrar"></a>
+        <div class="panel-card">
+          <a class="panel-close" href="#close" aria-label="Cerrar">×</a>
+          <h2>{c.title}</h2>
+          {c.description && <p class="panel-desc">{c.description}</p>}
+          <div class="panel-thumbs">
+            {c.works.map((w) => (
+              <Image src={w.img} alt={w.type ?? w.slug} widths={[240, 480]} sizes="22vw" loading="lazy" />
+            ))}
+          </div>
+        </div>
+      </div>
+    ))}
+  </main>
+</Base>
+
+<style>
+  .universo {
+    min-height: 100vh;
+    background: radial-gradient(120% 120% at 50% 0%, color-mix(in srgb, var(--color-paper) 70%, #fff) 0%, var(--color-paper) 60%, color-mix(in srgb, var(--color-paper) 88%, var(--color-ink)) 100%);
+    overflow: hidden;
+  }
+
+  .universo-head {
+    position: relative;
+    z-index: 5;
+    text-align: center;
+    padding: 4vh 6vw 0;
+  }
+  .universo-head .back {
+    display: inline-block;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    transition: color 0.3s ease;
+  }
+  .universo-head .back:hover { color: var(--color-ink); }
+  .universo-head h1 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(2.4rem, 8vw, 6rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    color: var(--color-ink);
+    margin-top: 0.6rem;
+  }
+  .universo-head p {
+    max-width: 38ch;
+    margin: 0.9rem auto 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  /* ── Galaxy field ─────────────────────────────────────────────── */
+  .galaxy {
+    position: relative;
+    height: 74vh;
+  }
+  .cluster {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 0;
+    height: 0;
+    --push: 1;            /* orbit pushes outward on hover */
+    --name: 1;            /* name scale on hover */
+  }
+  .cluster:hover { z-index: 20; }
+  .cluster:hover { --push: 1.42; --name: 1.55; }
+
+  .orbit { position: absolute; inset: 0; }
+
+  .moon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--sz);
+    margin: 0;
+    transform:
+      rotate(var(--a))
+      translate(calc(var(--r) * var(--push)))
+      rotate(calc(-1 * var(--a)))
+      translate(-50%, -50%);
+    transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .moon .float {
+    display: block;
+    animation: drift var(--d, 6s) ease-in-out var(--delay, 0s) infinite alternate;
+  }
+  .moon img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 2px;
+    box-shadow: 0 8px 30px rgba(34, 29, 26, 0.18);
+  }
+  @keyframes drift {
+    from { transform: translate(calc(var(--shift) * -1), 6px) rotate(-1.2deg); }
+    to   { transform: translate(var(--shift), -8px) rotate(1.4deg); }
+  }
+
+  .cluster-name {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(var(--name));
+    transform-origin: center;
+    z-index: 10;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(1rem, 2.4vw, 2rem);
+    letter-spacing: 0.02em;
+    color: var(--color-ink);
+    text-shadow: 0 2px 18px rgba(243, 238, 230, 0.95), 0 0 8px rgba(243, 238, 230, 0.9);
+    transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.3s ease;
+    cursor: pointer;
+  }
+  .cluster-name::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: -0.5em;
+    width: 0;
+    height: 2px;
+    background: var(--color-ink);
+    transform: translateX(-50%);
+    transition: width 0.4s ease;
+  }
+  .cluster:hover .cluster-name::after { width: 70%; }
+
+  /* ── Project info panel (CSS :target, zero-JS) ────────────────── */
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 5vw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+  }
+  .panel:target { opacity: 1; pointer-events: auto; }
+  .panel-scrim {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--color-ink) 55%, transparent);
+    backdrop-filter: blur(4px);
+  }
+  .panel-card {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    width: 100%;
+    max-height: 86vh;
+    overflow: auto;
+    background: var(--color-paper);
+    padding: clamp(1.6rem, 4vw, 3rem);
+    box-shadow: 0 30px 80px rgba(34, 29, 26, 0.35);
+    transform: translateY(18px);
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .panel:target .panel-card { transform: translateY(0); }
+  .panel-close {
+    position: absolute;
+    top: 0.8rem;
+    right: 1.1rem;
+    font-size: 1.8rem;
+    line-height: 1;
+    color: var(--color-muted);
+    transition: color 0.3s ease;
+  }
+  .panel-close:hover { color: var(--color-ink); }
+  .panel-card h2 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    line-height: 0.95;
+    color: var(--color-ink);
+  }
+  .panel-desc {
+    margin-top: 0.9rem;
+    max-width: 56ch;
+    line-height: 1.6;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+  .panel-thumbs {
+    margin-top: 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.6rem;
+  }
+  .panel-thumbs img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* ── Mobile: stack clusters vertically with breathing room ─────── */
+  @media (max-width: 768px) {
+    .galaxy {
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 44vh;
+      padding: 26vh 0 30vh;
+    }
+    .cluster {
+      position: relative;
+      left: auto;
+      top: auto;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .moon .float { animation: none; }
+  }
+</style>

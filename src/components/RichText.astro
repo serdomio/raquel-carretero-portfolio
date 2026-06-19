@@ -1,0 +1,77 @@
+---
+// Renders TinaCMS rich-text content to HTML at build time.
+//
+// IMPORTANT: TinaCMS stores a rich-text field in a JSON collection as a **markdown
+// string** (not an AST object). So content authored via the /admin WYSIWYG arrives here
+// as markdown, and we render it with `marked`. We keep a defensive fallback for the rare
+// case of a legacy AST object so old content still renders instead of throwing.
+import { marked } from 'marked';
+
+interface Props {
+  content?: unknown;
+  class?: string;
+}
+const { content, class: className } = Astro.props;
+
+marked.setOptions({ gfm: true, breaks: false });
+
+function toHtml(value: unknown): string {
+  if (!value) return '';
+  if (typeof value === 'string') return marked.parse(value) as string;
+  // Legacy fallback: a Tina/Slate AST object — pull its plain text out.
+  if (typeof value === 'object') {
+    const walk = (n: any): string =>
+      typeof n?.text === 'string'
+        ? n.text
+        : Array.isArray(n?.children)
+          ? n.children.map(walk).join('')
+          : '';
+    const text = walk(value);
+    return text ? (marked.parse(text) as string) : '';
+  }
+  return '';
+}
+
+const html = toHtml(content);
+---
+
+{html && <div class:list={['richtext', className]} set:html={html} />}
+
+<style>
+  .richtext :global(p) {
+    margin: 0 0 1em;
+  }
+  .richtext :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .richtext :global(h2),
+  .richtext :global(h3) {
+    font-family: var(--font-display, inherit);
+    font-weight: 500;
+    margin: 1.6em 0 0.5em;
+    line-height: 1.15;
+  }
+  .richtext :global(a) {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+    transition: opacity 0.2s ease;
+  }
+  .richtext :global(a:hover) {
+    opacity: 0.6;
+  }
+  .richtext :global(ul),
+  .richtext :global(ol) {
+    margin: 0 0 1em;
+    padding-left: 1.4em;
+  }
+  .richtext :global(li) {
+    margin: 0.2em 0;
+  }
+  .richtext :global(blockquote) {
+    margin: 1.4em 0;
+    padding-left: 1em;
+    border-left: 2px solid currentColor;
+    font-style: italic;
+    opacity: 0.85;
+  }
+</style>

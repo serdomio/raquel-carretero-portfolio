@@ -1,0 +1,35 @@
+{
+  "name": "photography-portfolio",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "thumbs": "node scripts/sync-thumbs.mjs",
+    "predev": "node scripts/sync-thumbs.mjs",
+    "dev": "tinacms dev -c \"astro dev\"",
+    "dev:astro": "astro dev",
+    "prebuild": "node scripts/sync-thumbs.mjs",
+    "build": "astro build",
+    "build:cloud": "node scripts/sync-thumbs.mjs && tinacms build && astro build",
+    "tina:build": "tinacms build",
+    "preview": "astro preview",
+    "shot": "node scripts/screenshot.mjs"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.7",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@tailwindcss/vite": "^4.3.1",
+    "@tinacms/cli": "^2.5.1",
+    "astro": "^6.4.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^4.3.1",
+    "tinacms": "^3.9.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "netlify-cli": "^26.1.0",
+    "playwright": "^1.61.0"
+  }
+}

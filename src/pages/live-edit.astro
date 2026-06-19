@@ -1,0 +1,97 @@
+---
+import Base from '../layouts/Base.astro';
+import LiveEdit from '../components/LiveEdit.tsx';
+import portfolio from '../../content/portfolio.json';
+
+// Fetch through the Tina GraphQL client so the returned data carries the field
+// metadata that powers contextual editing. The client talks to the local Tina
+// dev server (localhost:4001), which only runs under `npm run dev`. During an
+// offline production `astro build` there is no server, so we fall back to the raw
+// JSON: the page still builds and renders, but contextual field-linking is inert.
+// (Live click-to-edit is a dev/admin-time feature anyway.)
+let props: { data: any; query: string; variables: object };
+try {
+  const { client } = await import('../../tina/__generated__/client');
+  const res = await client.queries.portfolio({ relativePath: 'portfolio.json' });
+  props = { data: res.data, query: res.query, variables: res.variables };
+} catch {
+  props = { data: { portfolio }, query: '', variables: {} };
+}
+---
+
+<Base title="Live edit — contextual editing demo">
+  <main class="live-edit-page">
+    <p class="le-hint">
+      Contextual editing demo. Open <code>/admin</code> → <strong>Enter Edit Mode</strong>,
+      then navigate here: click any text below to edit it in place and watch it update live.
+    </p>
+    <LiveEdit client:only="react" {...props} />
+  </main>
+</Base>
+
+<style>
+  .live-edit-page {
+    max-width: 60ch;
+    margin: 0 auto;
+    padding: 12vh 6vw;
+  }
+  .le-hint {
+    margin-bottom: 3rem;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+    border-radius: 2px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  .le-hint code {
+    font-family: ui-monospace, monospace;
+    color: var(--color-ink);
+  }
+  /* The island markup is React-rendered, so these are global. */
+  .live-edit-page :global(.le-name) {
+    font-family: var(--font-serif), serif;
+    font-weight: 300;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    margin-bottom: 1.5rem;
+  }
+  .live-edit-page :global(.le-about) {
+    font-size: 1rem;
+    line-height: 1.65;
+    margin-bottom: 3rem;
+    color: color-mix(in srgb, var(--color-ink) 88%, transparent);
+  }
+  .live-edit-page :global(.le-sections) {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    padding-top: 2rem;
+  }
+  .live-edit-page :global(.le-section) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  .live-edit-page :global(.le-title) {
+    font-family: var(--font-serif), serif;
+    font-size: 1.3rem;
+  }
+  .live-edit-page :global(.le-desc) {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+  /* Make editable regions discoverable on hover when inside the admin. */
+  .live-edit-page :global([data-tina-field]) {
+    cursor: text;
+    transition: outline-color 0.2s ease;
+    outline: 2px solid transparent;
+    outline-offset: 3px;
+  }
+  .live-edit-page :global([data-tina-field]:hover) {
+    outline-color: color-mix(in srgb, var(--color-ink) 30%, transparent);
+  }
+</style>

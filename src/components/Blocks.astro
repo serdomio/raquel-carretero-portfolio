@@ -1,0 +1,244 @@
+---
+// Art-directed content blocks for a section, edited via TinaCMS block templates.
+// Empty by default → a section with no blocks renders nothing and the page is
+// visually unchanged. Tina stores the chosen template name in `_template`.
+//
+// Two deliberate image pipelines (see lib/images.ts):
+//   • Gallery images (fullbleed / split / diptych) — a filename string picked with
+//     the ImagePicker, resolved to an optimized astro:assets <Image>.
+//   • Media-manager uploads (feature) — Tina `image` field → /uploads/*, served
+//     as-is (for one-off images that are not in the optimized gallery).
+import { Image } from 'astro:assets';
+import RichText from './RichText.astro';
+import { resolveImage } from '../lib/images';
+
+interface Props {
+  blocks?: any[];
+}
+const { blocks = [] } = Astro.props;
+---
+
+{
+  blocks.length > 0 && (
+    <div class="section-blocks">
+      {blocks.map((b) => {
+        switch (b?._template) {
+          case 'prose':
+            return (
+              <div class="block block-prose">
+                <RichText content={b.body} />
+              </div>
+            );
+
+          case 'statement':
+            return (
+              b.text && (
+                <p class="block block-statement">{b.text}</p>
+              )
+            );
+
+          case 'quote':
+            return (
+              <blockquote class="block block-quote">
+                <p>{b.text}</p>
+                {b.cite && <cite>— {b.cite}</cite>}
+              </blockquote>
+            );
+
+          case 'fullbleed': {
+            const img = resolveImage(b.image);
+            if (!img) return null;
+            return (
+              <figure class={`block block-fullbleed h-${b.height || 'tall'}`}>
+                <Image src={img} alt={b.caption ?? ''} sizes="100vw" />
+                {b.caption && <figcaption>{b.caption}</figcaption>}
+              </figure>
+            );
+          }
+
+          case 'split': {
+            const img = resolveImage(b.image);
+            return (
+              <div class={`block block-split ${b.layout === 'image-right' ? 'reverse' : ''}`}>
+                {img && (
+                  <div class="split-media">
+                    <Image src={img} alt={b.caption ?? ''} sizes="(max-width: 768px) 100vw, 50vw" />
+                  </div>
+                )}
+                <div class="split-text">
+                  <RichText content={b.body} />
+                </div>
+              </div>
+            );
+          }
+
+          case 'diptych': {
+            const a = resolveImage(b.imageA);
+            const c = resolveImage(b.imageB);
+            if (!a && !c) return null;
+            return (
+              <figure class="block block-diptych">
+                <div class="diptych-grid">
+                  {a && <Image src={a} alt="" sizes="(max-width: 768px) 100vw, 50vw" />}
+                  {c && <Image src={c} alt="" sizes="(max-width: 768px) 100vw, 50vw" />}
+                </div>
+                {b.caption && <figcaption>{b.caption}</figcaption>}
+              </figure>
+            );
+          }
+
+          case 'feature':
+            // Media-manager upload (public/uploads), served directly.
+            return (
+              <figure class="block block-feature">
+                {b.image && <img src={b.image} alt={b.caption ?? ''} loading="lazy" />}
+                {b.caption && <figcaption>{b.caption}</figcaption>}
+              </figure>
+            );
+
+          default:
+            return null;
+        }
+      })}
+    </div>
+  )
+}
+
+<style>
+  /* Full-width column; readable text blocks re-center themselves, image blocks
+     bleed out to the section's padding edge via negative inline margin (= -4vw,
+     the .section horizontal padding), so "full-bleed" reaches the viewport edge
+     without viewport-width math or scrollbar overflow. */
+  .section-blocks {
+    width: 100%;
+    margin: 0 auto 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2rem, 6vh, 4.5rem);
+  }
+
+  /* ── Text blocks: constrained to a readable measure, centered ── */
+  .block-prose {
+    max-width: 60ch;
+    margin-inline: auto;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--color-ink) 85%, transparent);
+  }
+  .block-statement {
+    max-width: 22ch;
+    margin: clamp(1rem, 4vh, 3rem) auto;
+    text-align: center;
+    font-family: var(--font-serif), serif;
+    font-weight: 300;
+    font-style: italic;
+    font-size: clamp(1.8rem, 5vw, 3.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+  .block-quote {
+    max-width: 32ch;
+    margin-inline: auto;
+    text-align: center;
+    font-family: var(--font-serif), serif;
+    font-size: clamp(1.2rem, 3vw, 1.8rem);
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+  .block-quote p { margin: 0; }
+  .block-quote cite {
+    display: block;
+    margin-top: 0.9rem;
+    font-family: var(--font-sans, inherit);
+    font-style: normal;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* ── Full-bleed image: out to the section edge, optional overlaid caption ── */
+  .block-fullbleed {
+    position: relative;
+    margin: 0 -4vw;
+  }
+  .block-fullbleed :global(img) {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+  }
+  .block-fullbleed.h-tall :global(img) { height: clamp(360px, 78vh, 880px); }
+  .block-fullbleed.h-short :global(img) { height: clamp(240px, 48vh, 560px); }
+  .block-fullbleed.h-auto :global(img) { height: auto; }
+  .block-fullbleed figcaption {
+    position: absolute;
+    left: 4vw;
+    bottom: 1rem;
+    margin: 0;
+    padding: 0.35rem 0.7rem;
+    background: color-mix(in srgb, var(--color-ink) 62%, transparent);
+    color: var(--color-paper);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── Image + Text: two columns, image-left default / image-right toggle ── */
+  .block-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+  }
+  .block-split.reverse .split-media { order: 2; }
+  .split-media :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .split-text {
+    max-width: 46ch;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: color-mix(in srgb, var(--color-ink) 85%, transparent);
+  }
+
+  /* ── Diptych: two gallery images side by side ── */
+  .block-diptych { margin: 0; }
+  .diptych-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.6rem, 1.5vw, 1.4rem);
+  }
+  .diptych-grid :global(img) {
+    display: block;
+    width: 100%;
+    height: clamp(280px, 52vh, 640px);
+    object-fit: cover;
+  }
+  .block-diptych figcaption,
+  .block-feature figcaption {
+    margin-top: 0.7rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    text-align: center;
+  }
+
+  /* ── Feature (media-upload) ── */
+  .block-feature { margin: 0; }
+  .block-feature img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (max-width: 768px) {
+    .block-split { grid-template-columns: 1fr; }
+    .block-split.reverse .split-media { order: 0; }
+    .split-text { max-width: 60ch; margin-inline: auto; }
+  }
+</style>
